@@ -3,26 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bankism — Deterministic AI Firewall Gateway</title>
+  <title>Bankism — Deterministic AI Firewall</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <!-- Header -->
-  <header class="app-header">
+
+  <!-- ─── Header ─────────────────────────────────────────────── -->
+  <header class="app-header" role="banner">
     <div class="header-inner">
       <div class="brand-section">
         <h1 class="brand-title">Bankism</h1>
         <span class="badge-tag">Policy v1.0</span>
       </div>
       <div class="header-actions">
-        <div class="status-pill" id="status-pill" title="Gateway operating status">
+        <div class="status-pill" id="status-pill" title="Gateway mode">
           <span class="status-dot" id="status-dot"></span>
-          <span id="status-text">Degraded (Offline)</span>
+          <span id="status-text">Checking…</span>
         </div>
-        <button class="btn-ghost" id="tour-btn" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+        <button class="btn-ghost" id="large-text-btn" type="button" title="Toggle large text (L)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+          <span id="large-text-label">Large</span>
+        </button>
+        <button class="btn-ghost" id="tour-btn" type="button" title="Start guided tour (T)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
           </svg>
           Tour
         </button>
@@ -30,17 +37,19 @@
     </div>
   </header>
 
-  <!-- Main Console -->
-  <main class="container">
-    <!-- Left Column: Inputs & Account -->
-    <section class="left-col">
-      <!-- Request Input Card -->
+  <!-- ─── Main console ─────────────────────────────────────────── -->
+  <main class="container" role="main">
+
+    <!-- Left column -->
+    <section class="left-col" aria-label="Input">
+
+      <!-- Request card -->
       <div class="glass-card" id="request-card">
         <div class="micro-label">
           <span>Request</span>
-          <span id="cmd-counter" class="tabular-nums">0 / 500</span>
+          <span id="cmd-counter" class="tabular-nums" aria-live="polite">0 / 500</span>
         </div>
-        <form id="screen-form">
+        <form id="screen-form" novalidate>
           <div class="form-group">
             <div class="input-header">
               <label for="command-input">Banking Command</label>
@@ -51,14 +60,20 @@
               rows="3"
               maxlength="500"
               placeholder="e.g., Transfer ₹500 to Alice"
-              required
+              aria-required="true"
+              aria-describedby="cmd-counter"
             ></textarea>
           </div>
 
           <div class="form-group">
             <div class="input-header">
-              <label for="memo-input">Transaction Memo</label>
-              <span id="memo-counter" class="tabular-nums">0 / 60</span>
+              <label for="memo-input">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Memo — isolated, never reaches LLM
+              </label>
+              <span id="memo-counter" class="tabular-nums" aria-live="polite">0 / 60</span>
             </div>
             <input
               type="text"
@@ -66,36 +81,31 @@
               class="console-input"
               maxlength="60"
               placeholder="e.g., Dinner share"
+              aria-describedby="memo-counter"
             />
-            <div class="memo-note">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              Isolated: strictly stripped from LLM prompts
-            </div>
           </div>
 
-          <button type="submit" class="btn-primary" id="screen-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <button type="submit" class="btn-primary" id="screen-btn" aria-label="Screen request (Enter)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
             Screen Request
+            <span style="font-size:10px;opacity:0.6;margin-left:4px">↵</span>
           </button>
         </form>
 
-        <!-- Presets Row -->
+        <!-- Preset chips -->
         <div class="presets-container">
-          <div class="presets-label">Attack & Benign Presets (Keys 1-8)</div>
-          <div class="preset-chips" id="preset-chips"></div>
+          <div class="presets-label">Presets — keys 1-8</div>
+          <div class="preset-chips" id="preset-chips" role="toolbar" aria-label="Preset examples"></div>
         </div>
       </div>
 
-      <!-- Account State Card -->
+      <!-- Account card -->
       <div class="glass-card" id="account-card">
         <div class="micro-label">
           <span>Account State</span>
-          <button class="btn-ghost" id="reset-account-btn" style="padding: 2px 8px; font-size: 11px;">Reset</button>
+          <button class="btn-ghost" id="reset-account-btn" type="button" style="font-size:11px;padding:2px 8px;">Reset</button>
         </div>
         <div class="account-metrics">
           <div>
@@ -104,204 +114,239 @@
           </div>
           <div>
             <div class="metric-title">Daily Spent / Cap</div>
-            <div class="metric-val tabular-nums" id="acc-spent" style="font-size: 18px;">₹0 / ₹25k</div>
+            <div class="metric-val tabular-nums" id="acc-spent" style="font-size:18px">₹0 / ₹25k</div>
           </div>
         </div>
-        <div class="micro-label" style="margin-top: 14px;">Saved Payees</div>
-        <ul class="payee-list" id="payee-list"></ul>
+        <div class="account-limits">
+          <span>Per-transfer cap: ₹10,000</span>
+          <span>Session limit: 5</span>
+        </div>
+        <div class="micro-label" style="margin-top:10px">Saved Payees</div>
+        <ul class="payee-list" id="payee-list" aria-label="Saved payees"></ul>
       </div>
-    </section>
 
-    <!-- Right Column: Verdict, Proof & Trace -->
-    <section class="right-col">
-      <!-- Verdict Card -->
-      <div class="glass-card verdict-card" id="verdict-card">
+    </section><!-- /left-col -->
+
+    <!-- Right column -->
+    <section class="right-col" aria-label="Verdict and trace">
+
+      <!-- Verdict card -->
+      <div class="glass-card verdict-card" id="verdict-card" aria-live="polite" aria-label="Security verdict">
         <div class="micro-label">Decision Engine</div>
-        <div id="verdict-content">
-          <!-- Empty State -->
-          <div id="verdict-empty" style="color: var(--text-muted); font-size: 14px; padding: 12px 0;">
-            Submit a request or select a preset to view the deterministic security verdict.
-          </div>
 
-          <!-- Active Verdict Details -->
-          <div id="verdict-active" style="display: none;">
-            <div class="verdict-header">
-              <div class="verdict-badge" id="verdict-badge">APPROVED</div>
-              <div class="tabular-nums" style="text-align: right;">
-                <span style="font-size: 12px; color: var(--text-muted);">Risk Score</span>
-                <div style="font-size: 26px; font-weight: 700;" id="risk-score-val">0</div>
-              </div>
-            </div>
-
-            <!-- Risk Bar -->
-            <div class="risk-meter-container">
-              <div class="risk-label-row">
-                <span id="risk-level-tag">LOW</span>
-                <span>Threshold: 30 max</span>
-              </div>
-              <div class="risk-bar-track">
-                <div class="risk-bar-fill" id="risk-bar-fill"></div>
-              </div>
-            </div>
-
-            <div class="chips-row">
-              <span class="status-chip" id="category-chip" style="background: var(--solid-inset);">NONE</span>
-              <span class="status-chip" id="owasp-chip" style="background: var(--solid-inset);">OWASP: NONE</span>
-            </div>
-
-            <div class="explanation-box" id="explanation-box">
-              Request meets all deterministic security policies and literal provenance checks.
-            </div>
-
-            <button class="btn-ghost" id="explain-btn" style="margin-top: 10px; width: 100%; justify-content: center;">
-              Explain this verdict
-            </button>
-            <div id="explain-details" style="display: none; margin-top: 10px; padding: 12px; background: var(--solid-inset); border-radius: var(--radius-elem); font-size: 13px; line-height: 1.6;"></div>
-          </div>
+        <!-- Empty state -->
+        <div id="verdict-empty">
+          Submit a request or select a preset to view the deterministic security verdict.
         </div>
-      </div>
 
-      <!-- Annotated Text Card -->
+        <!-- Active verdict -->
+        <div id="verdict-active" style="display:none">
+          <div class="verdict-header">
+            <div class="verdict-badge" id="verdict-badge">APPROVED</div>
+            <div class="risk-score-display">
+              <div class="risk-score-label">Risk Score</div>
+              <div class="risk-score-num tabular-nums" id="risk-score-val">0</div>
+            </div>
+          </div>
+
+          <div class="risk-meter-container" aria-label="Risk meter">
+            <div class="risk-label-row">
+              <span id="risk-level-tag" style="font-weight:600;font-size:11px">LOW</span>
+              <span>Threshold: 30&nbsp;/&nbsp;100</span>
+            </div>
+            <div class="risk-bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" id="risk-bar-track">
+              <div class="risk-bar-fill" id="risk-bar-fill"></div>
+              <span class="tick-70" style="position:absolute;top:-3px;left:70%;width:1px;height:11px;background:var(--glass-border-sub)"></span>
+            </div>
+          </div>
+
+          <div class="chips-row">
+            <span class="status-chip" id="category-chip">NONE</span>
+            <span class="status-chip" id="owasp-chip">OWASP: NONE</span>
+          </div>
+
+          <div class="explanation-box" id="explanation-box">
+            Request meets all deterministic security policies.
+          </div>
+
+          <button class="btn-ghost" id="explain-btn" type="button" style="margin-top:10px;width:100%;justify-content:center;font-size:12px">
+            Explain this verdict
+          </button>
+          <div id="explain-details" style="display:none;margin-top:10px;padding:12px;background:var(--solid-inset);border-radius:var(--r-elem);font-size:12px;line-height:1.6"></div>
+        </div>
+      </div><!-- /verdict-card -->
+
+      <!-- Annotated text card -->
       <div class="glass-card" id="provenance-card">
-        <div class="micro-label">Literal Provenance & Isolation</div>
-        <div class="annotated-box" id="annotated-box">
-          Awaiting input text...
+        <div class="micro-label">Literal Provenance &amp; Isolation</div>
+        <div class="annotated-box" id="annotated-box" aria-live="polite">
+          Awaiting input…
         </div>
       </div>
 
-      <!-- Layer Stepper Trace -->
+      <!-- Layer trace card -->
       <div class="glass-card" id="trace-card">
         <div class="micro-label">Deterministic Layer Trace</div>
-        <div class="stepper-trace" id="stepper-trace">
-          <!-- Populated dynamically -->
-        </div>
+        <div class="stepper-trace" id="stepper-trace" role="list"></div>
       </div>
 
-      <!-- Confirmation / Mandate Card -->
-      <div class="glass-card" id="mandate-card" style="display: none;">
-        <div class="micro-label">Cryptographic Mandate & Authorization</div>
+      <!-- Confirmation / Mandate card -->
+      <div class="glass-card" id="mandate-card" style="display:none">
+        <div class="micro-label">Cryptographic Mandate &amp; Authorization</div>
         <div id="mandate-details"></div>
       </div>
 
-      <!-- Bottom Details Tabs -->
-      <div class="glass-card" style="padding-top: 16px;">
-        <div class="tabs-header">
-          <button class="tab-btn active" data-tab="json-tab">Verdict JSON</button>
-          <button class="tab-btn" data-tab="audit-tab">Audit Log</button>
-          <button class="tab-btn" data-tab="benchmarks-tab">Benchmarks</button>
+      <!-- Bottom tabs card -->
+      <div class="glass-card" style="padding-top:16px">
+        <div class="tabs-header" role="tablist">
+          <button class="tab-btn active" data-tab="json-tab" role="tab" aria-selected="true">Verdict JSON</button>
+          <button class="tab-btn" data-tab="audit-tab" role="tab" aria-selected="false">Audit Log</button>
+          <button class="tab-btn" data-tab="benchmarks-tab" role="tab" aria-selected="false">Benchmarks</button>
+          <div class="tab-indicator" id="tab-indicator"></div>
         </div>
 
-        <div class="tab-content" id="json-tab">
+        <div class="tab-content" id="json-tab" role="tabpanel">
           <pre class="code-json" id="verdict-json">// Verdict response JSON will appear here</pre>
         </div>
 
-        <div class="tab-content" id="audit-tab" style="display: none;">
+        <div class="tab-content" id="audit-tab" role="tabpanel" style="display:none">
           <table class="compact-table">
             <thead>
               <tr>
-                <th>Verdict</th>
-                <th>Time</th>
-                <th>Command</th>
-                <th>Category</th>
-                <th>Score</th>
+                <th>Verdict</th><th>Time</th><th>Command</th>
+                <th>Category</th><th>Score</th>
               </tr>
             </thead>
             <tbody id="audit-table-body"></tbody>
           </table>
         </div>
 
-        <div class="tab-content" id="benchmarks-tab" style="display: none;">
+        <div class="tab-content" id="benchmarks-tab" role="tabpanel" style="display:none">
           <div id="benchmarks-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
               <div>
-                <strong style="font-size: 15px;">Live Evaluation Suite</strong>
-                <div style="font-size: 12px; color: var(--text-muted);" id="bench-meta">Generated: 125 cases</div>
+                <strong style="font-size:14px">Evaluation Suite</strong>
+                <div style="font-size:11px;color:var(--text-muted)" id="bench-meta">Loading…</div>
               </div>
               <div class="status-pill">
                 <span class="status-dot live"></span>
                 <span>Precomputed Deterministic</span>
               </div>
             </div>
-
-            <!-- Scorecard Summary -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;" id="bench-metrics"></div>
-
-            <!-- Dataset Picker Chips -->
+            <div id="bench-metrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px"></div>
             <div class="micro-label">Filter Datasets</div>
-            <div class="preset-chips" id="dataset-filter-chips" style="margin-bottom: 14px;"></div>
-
-            <!-- Case Browser -->
-            <div class="micro-label">Case Browser (Click to Run Live)</div>
-            <div style="max-height: 240px; overflow-y: auto; background: var(--solid-inset); border-radius: var(--radius-elem); border: 1px solid var(--glass-border-subtle);">
+            <div class="preset-chips" id="dataset-filter-chips" style="margin-bottom:12px"></div>
+            <div class="micro-label">Case Browser — click to run live</div>
+            <div style="max-height:220px;overflow-y:auto;background:var(--solid-inset);border-radius:var(--r-elem);border:1px solid var(--glass-border-sub)">
               <table class="compact-table">
                 <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Expected</th>
-                    <th>Actual</th>
-                    <th>Command</th>
-                    <th>Threat</th>
-                  </tr>
+                  <tr><th>ID</th><th>Expected</th><th>Actual</th><th>Command</th><th>Threat</th></tr>
                 </thead>
                 <tbody id="case-browser-body"></tbody>
               </table>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+
+      </div><!-- /tabs card -->
+
+    </section><!-- /right-col -->
+
   </main>
 
-  <!-- Tour Mode Overlay & Morphing Spotlight -->
-  <div id="tour-overlay" class="tour-overlay" style="display: none;">
-    <div id="tour-spotlight" class="tour-spotlight"></div>
-    <div id="tour-tooltip" class="tour-tooltip glass-card">
+  <!-- ─── Mobile sticky screen button ──────────────────────── -->
+  <div class="mobile-sticky-bar" aria-hidden="true">
+    <button type="button" class="btn-primary" id="mobile-screen-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Screen Request
+    </button>
+  </div>
+
+  <!-- ─── Tour overlay ──────────────────────────────────────── -->
+  <div id="tour-overlay" class="tour-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Guided tour">
+
+    <!-- Welcome card (step 0) -->
+    <div id="tour-welcome" class="tour-center-card glass-card" style="display:none;padding:28px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);font-weight:700;margin-bottom:8px">Guided Tour</div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em">90 seconds, 9 steps</h2>
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:20px">
+        Each step runs a real API call, types the command into the console, and highlights exactly what Bankism is protecting against. Skip any time.
+      </p>
+      <div style="display:flex;gap:10px">
+        <button class="btn-primary" id="tour-start-btn" style="flex:1">Start tour</button>
+        <button class="btn-ghost" id="tour-welcome-skip" style="flex:0 0 auto">Skip</button>
+      </div>
+    </div>
+
+    <!-- Finish card (step 10) -->
+    <div id="tour-finish" class="tour-center-card glass-card" style="display:none;padding:28px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);font-weight:700;margin-bottom:8px">Tour Complete</div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em">That's Bankism.</h2>
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:20px">
+        Deterministic code validates every token. The LLM can only raise risk, never lower it. Every approved mandate is cryptographically signed before reaching the mock bank.
+      </p>
+      <button class="btn-primary" id="tour-finish-btn">Close</button>
+    </div>
+
+    <!-- Spotlight (morphs between targets) -->
+    <div id="tour-spotlight" class="tour-spotlight" aria-hidden="true"></div>
+
+    <!-- Floating tooltip -->
+    <div id="tour-tooltip" class="tour-tooltip glass-card" style="display:none">
+      <div id="tour-arrow" class="tour-arrow" aria-hidden="true"></div>
       <div class="tour-header">
-        <span class="tour-step-badge" id="tour-step-counter">Step 1 of 9</span>
+        <span class="tour-step-label" id="tour-step-label">Step 1 of 9</span>
         <button class="tour-close-btn" id="tour-close-btn" aria-label="Close tour">×</button>
       </div>
-      <div class="tour-progress-track">
-        <div class="tour-progress-bar" id="tour-progress-bar"></div>
-      </div>
-      <h3 class="tour-title" id="tour-title">1. Gateway, Not a Chatbot</h3>
-      <p class="tour-desc" id="tour-desc">
-        Bankism is a deterministic-first firewall that intercepts untrusted text before it touches banking APIs.
-      </p>
+      <div class="tour-progress-track"><div class="tour-progress-bar" id="tour-progress-bar"></div></div>
+      <div class="tour-dots" id="tour-dots"></div>
+      <h3 class="tour-title" id="tour-title"></h3>
+      <p class="tour-desc" id="tour-desc"></p>
       <div class="tour-actions">
-        <button class="btn-ghost" id="tour-prev-btn" style="padding: 6px 12px; font-size: 12px;">Back</button>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn-ghost" id="tour-skip-btn" style="padding: 6px 12px; font-size: 12px;">Skip</button>
-          <button class="btn-primary" id="tour-next-btn" style="width: auto; padding: 6px 16px; font-size: 12px;">Next</button>
+        <button class="btn-ghost" id="tour-prev-btn" type="button" style="font-size:12px;padding:5px 11px" aria-label="Previous step (←)">← Back</button>
+        <div style="display:flex;gap:7px;align-items:center">
+          <!-- Autoplay ring -->
+          <div class="tour-autoplay-ring" id="autoplay-ring" title="Autoplay" style="display:none">
+            <svg width="26" height="26" viewBox="0 0 26 26">
+              <circle cx="13" cy="13" r="10" fill="none" stroke="var(--glass-border-sub)" stroke-width="2"/>
+              <circle cx="13" cy="13" r="10" class="tour-ring-circle" id="tour-ring-circle"/>
+            </svg>
+          </div>
+          <button class="btn-ghost" id="tour-auto-btn" type="button" style="font-size:11px;padding:5px 10px">Auto</button>
+          <button class="btn-ghost" id="tour-skip-btn" type="button" style="font-size:11px;padding:5px 10px">Skip</button>
+          <button class="btn-primary" id="tour-next-btn" type="button" style="width:auto;padding:6px 14px;font-size:12px" aria-label="Next step (→)">Next →</button>
         </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tour-overlay -->
 
-  <!-- Floating Guide Button & Panel (Bottom-Right) -->
+  <!-- ─── Floating Guide ────────────────────────────────────── -->
   <div class="floating-guide-container">
-    <button id="guide-fab" class="guide-fab" title="Understand Bankism" aria-label="Open Floating Guide">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    <button id="guide-fab" class="guide-fab" type="button" aria-label="Open guide" title="Understand Bankism">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
     </button>
-
-    <div id="guide-panel" class="guide-panel glass-card" style="display: none;">
+    <div id="guide-panel" class="guide-panel glass-card" style="display:none" role="dialog" aria-label="Bankism guide">
       <div class="guide-header">
         <div>
-          <div style="font-weight: 600; font-size: 14px;">Understand Bankism</div>
-          <div style="font-size: 11px; color: var(--text-muted);">Quick answers about how it works</div>
+          <div style="font-weight:650;font-size:14px">Understand Bankism</div>
+          <div style="font-size:11px;color:var(--text-muted)">Quick answers about how it works</div>
         </div>
-        <button id="guide-close-btn" class="tour-close-btn" aria-label="Close Guide">×</button>
+        <button id="guide-close-btn" class="tour-close-btn" type="button" aria-label="Close guide">×</button>
       </div>
-
       <div class="guide-chips" id="guide-chips"></div>
-
       <div class="guide-body">
-        <input type="text" id="guide-search-input" class="console-input" placeholder="Type a keyword..." style="margin-bottom: 10px; font-size: 12px; padding: 8px 10px;" />
+        <input type="text" id="guide-search-input" class="console-input"
+          placeholder="Type a keyword…"
+          style="margin-bottom:8px;font-size:12px;padding:7px 10px"
+          aria-label="Search guide"/>
         <div id="guide-answer-box" class="guide-answer-box">
-          Select a topic above or search keywords to learn how Bankism enforces security.
+          Select a topic above or type a keyword to learn how Bankism enforces security.
         </div>
       </div>
     </div>
