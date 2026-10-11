@@ -1,0 +1,42 @@
+[
+  {
+    "id": "faq_what_is_bankism",
+    "question": "What is Bankism and why is it not a chatbot?",
+    "answer": "Bankism is a deterministic-first AI firewall and mandate gateway. It does not converse, store session memory, or generate UI text. It accepts one financial instruction, performs deterministic multi-layer verification, and either issues an HMAC-signed transaction mandate or blocks the request."
+  },
+  {
+    "id": "faq_why_code_writes_explanation",
+    "question": "Why does code write the verdict explanation instead of an LLM?",
+    "answer": "If an LLM writes explanations, a jailbroken or compromised model can deceive the user or fabricate reasons that contradict the real security decision. Bankism generates every explanation deterministically from the triggered rule IDs and layer trace nodes."
+  },
+  {
+    "id": "faq_provenance_check",
+    "question": "How does the Literal Provenance Engine work?",
+    "answer": "The Literal Provenance Engine inspects the raw user text token spans directly. It verifies that extracted monetary figures and payees match exactly one unambiguous literal occurrence in the input. If multiple or zero candidates exist, the transaction fails closed as ambiguous."
+  },
+  {
+    "id": "faq_memo_handling",
+    "question": "How does Bankism treat transaction memos?",
+    "answer": "Memos are completely isolated and never enter any LLM prompt context. Memos are sanitized against an alphanumeric whitelist (maximum 60 characters). If a memo contains transfer verbs, role tags, or override keywords, a MEMO_INJECTION threat is immediately triggered."
+  },
+  {
+    "id": "faq_risk_score",
+    "question": "How is the risk score calculated?",
+    "answer": "The score is a deterministic sum (capped at 100) driven by policy.yaml weights: Obfuscation signals add 25 each, rule/grammar violations add 40, memo injections add 40, provenance failures add 50, policy violations add 50, and reader flags add up to 30. Requests score must be below 30 with zero rule hits to be approved."
+  },
+  {
+    "id": "faq_degraded_mode",
+    "question": "What happens in degraded or offline mode?",
+    "answer": "When LLM_MODE is offline, or if the Gemini API experiences a timeout (exceeding 3 seconds) or failure, Bankism fails closed into deterministic grammar-only mode. Simple rigid requests continue to work without external network dependencies."
+  },
+  {
+    "id": "faq_why_valid_request_blocked",
+    "question": "Why might a seemingly valid request be blocked?",
+    "answer": "A request is blocked if it violates deterministic banking constraints: transferring to an unsaved payee, mentioning multiple amounts, exceeding the ₹10,000 per-transfer cap, exceeding the daily ₹25,000 limit, or having insufficient funds."
+  },
+  {
+    "id": "faq_what_bankism_cannot_stop",
+    "question": "What are Bankism's known limitations?",
+    "answer": "Bankism protects the API boundary from prompt injection and unauthorized execution. It cannot prevent social engineering outside the system (e.g. a user willingly sending money to an authorized scammer) or compromised client devices."
+  }
+]

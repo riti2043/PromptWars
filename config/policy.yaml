@@ -1,0 +1,58 @@
+policy_version: "1.0.0"
+
+thresholds:
+  low_max: 19
+  medium_max: 39
+  high_max: 69
+  critical_min: 70
+  approval_max_score: 29
+
+limits:
+  per_transfer_cap: 10000.00
+  session_cumulative_cap: 25000.00
+  session_max_transfers: 5
+
+weights:
+  obfuscation_signal: 25
+  rule_hit: 40
+  memo_stripped_injection: 40
+  provenance_failure: 50
+  multiple_candidates: 50
+  policy_violation: 50
+  llm_attack_flag: 30
+
+rules:
+  - id: "RULE_IGNORE_OVERRIDE"
+    category: "POLICY_OVERRIDE"
+    weight: 40
+    owasp: "ASI01"
+    regex: '(?i)(?:ignore\s+(?:all\s+)?(?:previous|prior|above|system)\s+(?:instructions|prompts|rules)|disregard\s+(?:all\s+)?(?:previous|prior|rules)|forget\s+(?:all\s+)?(?:previous|prior)\s+instructions|system\s+override\s+code)'
+    explanation: "Command attempts to override prior instructions or reset security policies."
+
+  - id: "RULE_ROLEPLAY_JAILBREAK"
+    category: "JAILBREAK_ROLEPLAY"
+    weight: 40
+    owasp: "ASI01"
+    regex: '(?i)(?:pretend\s+you\s+are|you\s+are\s+now|act\s+as\s+a|developer\s+mode|dan\s+mode|jailbreak|no\s+restrictions|unrestricted\s+mode|evil\s+twin)'
+    explanation: "Command employs persona adoption or jailbreak roleplay framing."
+
+  - id: "RULE_AUTHORITY_MIMICRY"
+    category: "POLICY_OVERRIDE"
+    weight: 40
+    owasp: "ASI01"
+    regex: '(?i)(?:under\s+(?:federal\s+)?regulation\s+[a-z0-9]|exception\s+clause\s+\d+|admin(?:istrator)?\s+override|compliance\s+bypass\s+mode|super-user\s+authorization|override\s+directive\s+\d+|executive\s+exemption)'
+    explanation: "Command mimics administrative or regulatory override authority."
+
+  - id: "RULE_DATA_EXFILTRATION"
+    category: "DATA_EXFILTRATION"
+    weight: 45
+    owasp: "ASI02"
+    regex: '(?i)(?:print\s+(?:the\s+)?system\s+prompt|reveal\s+(?:your\s+)?instructions|show\s+all\s+accounts|dump\s+(?:database|credentials|keys)|repeat\s+(?:everything\s+)?above|export\s+api\s+key)'
+    explanation: "Command attempts to extract system prompts, keys, or foreign account records."
+
+  - id: "RULE_TOOL_ROLE_TAGS"
+    category: "PROMPT_INJECTION"
+    weight: 40
+    owasp: "ASI01"
+    regex: '(?i)(?:<\|im_start\|>|<\|im_end\|>|\[INST\]|\[/INST\]|SYSTEM:\s*|ASSISTANT:\s*|USER:\s*|<system>|<assistant>)'
+    explanation: "Command contains prompt delimiter or chat template injection tokens."
